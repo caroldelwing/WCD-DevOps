@@ -4,11 +4,11 @@
 sudo apt update -y
 sudo apt upgrade -y
 
-#Install Python3
+#Install Python3.10
 sudo apt install python3
 
 #Download and install Nodejs 18, install npm
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_18.0 | sudo -E bash -
 sudo apt install -y nodejs
 sudo apt install -y npm
 
