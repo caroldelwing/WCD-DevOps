@@ -74,7 +74,7 @@ echo "Security group $SG_ID created successfully."
 
 #Enable the security group to allow SSH access
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
-
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol icmp --port -1 --source-group $SG_ID
 echo "Security group $SG_ID authorized for SSH ingress."
 
 #Create key-pair
