@@ -98,7 +98,7 @@ MASTER_NODE=$(aws ec2 run-instances \
     --user-data file://User-data.sh \
     --security-group-ids $SG_ID \
     --output text \
-    --query 'Instance.InstanceId')
+    --query 'Instances[0].InstanceId')
 
 echo "Instance Master Node $MASTER_NODE created successfully."
 
