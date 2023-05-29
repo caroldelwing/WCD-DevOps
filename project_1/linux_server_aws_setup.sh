@@ -128,6 +128,6 @@ WORKER_NODE2=$(aws ec2 run-instances \
     --user-data file://User-data.sh \
     --security-group-ids $SG_ID \
     --output text \
-    --query 'Instance.InstanceId')
+    --query 'Instances[0].InstanceId')
 
 echo "Instance Worker Node 2 $WORKER_NODE2 created successfully."
