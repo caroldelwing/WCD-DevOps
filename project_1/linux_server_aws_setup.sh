@@ -72,10 +72,10 @@ SG_ID=$(aws ec2 create-security-group \
 echo "Security group $SG_ID created successfully."
 
 
-#Enable the security group to allow SSH access
+#Enable the security group to allow SSH and ICMP access
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol icmp --port -1 --source-group $SG_ID
-echo "Security group $SG_ID authorized for SSH ingress."
+echo "Security group $SG_ID authorized for SSH and ICMP ingress."
 
 #Create key-pair
 aws ec2 create-key-pair \
@@ -95,7 +95,7 @@ MASTER_NODE=$(aws ec2 run-instances \
     --key-name project1_key \
     --subnet-id $SUBNET_ID \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=master-node-01}, {Key=project,Value=wecloud}]' \
-    --user-data file://User-data.sh \
+    --user-data file://userdata.sh \
     --security-group-ids $SG_ID \
     --output text \
     --query 'Instances[0].InstanceId')
@@ -110,7 +110,7 @@ WORKER_NODE1=$(aws ec2 run-instances \
     --key-name project1_key \
     --subnet-id $SUBNET_ID \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}, {Key=project,Value=wecloud}]' \
-    --user-data file://User-data.sh \
+    --user-data file://userdata.sh \
     --security-group-ids $SG_ID \
     --output text \
     --query 'Instances[0].InstanceId')
@@ -125,7 +125,7 @@ WORKER_NODE2=$(aws ec2 run-instances \
     --key-name project1_key \
     --subnet-id $SUBNET_ID \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-02}, {Key=project,Value=wecloud}]' \
-    --user-data file://User-data.sh \
+    --user-data file://userdata.sh \
     --security-group-ids $SG_ID \
     --output text \
     --query 'Instances[0].InstanceId')

@@ -15,7 +15,7 @@ sudo apt install -y npm
 #Install Java
 sudo apt install -y openjdk-11-jre-headless
 
-#Install Docker (not working)
+#Install Docker
 sudo apt-get install -y ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
