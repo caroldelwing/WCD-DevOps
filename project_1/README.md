@@ -39,7 +39,7 @@ Default output format [None]:
  ```
  Cloning Repository: 
  ```sh
- $ git clone https://github.com/caroldelwing/WCD-DevOps/tree/project_1_dev/project_1
+ $ git clone https://github.com/caroldelwing/WCD-DevOps
  ```
  Option 2: Download the scripts and save in your local machine.
  
