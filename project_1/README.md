@@ -1,5 +1,5 @@
 # Project 1 - Linux Server on Aws 
-Bash shell scripts to deploy AWS cloud infrastructure using the AWS CLI command line tool. The AWS cloud environment will have a VPC, internet gateway, public subnet, public route table, EC2 instances.
+This project deploys an AWS cloud infrastructure using the AWS CLI command line tool and a Bash Shell script. The AWS cloud environment has a VPC, internet gateway, public subnet, public route table, and three EC2 instances. The EC2 instances must be in the same public subnet and VPC, reachable to each other, and accessible remotely by SSH. Moreover, the instances must have Python 3.10, Node 18.0, Java 11.0, and Docker engine installed.
 
 ## Table of contents 
   - [Getting Started](#getting-started)
@@ -9,49 +9,59 @@ Bash shell scripts to deploy AWS cloud infrastructure using the AWS CLI command 
 
 
 ## Getting Started 
-To run these scripts you will have to first install AWS CLI on a linux terminal and configure users security credentians on aws. 
+To be able to run the script, you'll need an AWS account, an IAM (Identity and Access Management) user with the right permissions, and a secret access key (download the file with your secret access key, you'll need it later). We used a user with the 'AdministratorAcess' policy attached. For more info about IAM users and secret access keys, go to:
+https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html
+https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html
 
-Use following command to install AWS CLI: 
+Once the user is created on the AWS Console, open a new Linux terminal in your machine, and install AWS CLI.
+
+Use the following command to install AWS CLI: 
 ```sh
 $ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 $ unzip awscliv2.zip
 $ sudo ./aws/install
 ```
+Acess the following link for more info about how to install AWS CLI:
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-To configure users security credentials:
-First, create an account on aws.com and loggin in as root user. Search for IAM on search bar and then create an userwith admnistrator access policy and the create an access key.Copy the acces key and secret access key generated on a notepad.
-Then use following comand to access your aws account: 
+To access your AWS account, execute the following command in your terminal: 
 
 ```sh
 $ aws configure
-AWS Access Key ID [None]: paste access key id generated 
-AWS Secret Access Key [None]: paste secret access key generated
+AWS Access Key ID [None]: paste your access key id 
+AWS Secret Access Key [None]: paste your secret access key
 Default region name [None]: us-east-1
 Default output format [None]: 
 ```
 
 ## Installation 
- Option 1: Clone this repository. For this option you will need to install git on your terminal first, then clone the repository: 
+ Option 1: Clone this repository. For this option, you will need to install git on your terminal first, then clone the repository: 
  
- Git Installation:
- ```sh
- $ sudo apt-get install git
- ```
- Cloning Repository: 
+ To install Git, please go to this link and follow the steps:
+ https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+ 
+ Cloning the repository: 
  ```sh
  $ git clone https://github.com/caroldelwing/WCD-DevOps
  ```
  Option 2: Download the scripts and save in your local machine.
  
  ## Usage 
+ To execute the script, in your terminal, navigate to the folder where the scripts are stored. Then, grant execution permission to both main (linux_server_aws_setup.sh) and auxiliary (userdata.sh) scripts. Lastly, execute the main script.
+
+ The main script is responsible for creating the cloud architecture, while the auxiliary script is responsible for installing the required software in each EC2 instance.
  
- Run the scripts by using bash and file name: 
+ Running the script: 
  ```sh
- $bash linux_server_aws_setup.sh
- $bash userdata.sh 
+ $ chmod +x linux_server_aws_setup.sh userdata.sh
+ $ ./linux_server_aws_setup.sh 
 ```
+
+After executing the script, go to the AWS Console in the us-east-1 region, and you will be able to see the EC2 instances running. Wait for the Status Checks to be completed to check the version of the software installed in each instance.
+If you want to rerun the same script, firstly you'll have to manually delete the created SSH key pair on the AWS Console and in your machine.
+
 
 ## Authors 
 - Beatriz Carvalho de Oliveira - https://github.com/beatrizCarvalhoOliveira
-- Carol Delwing - https://github.com/caroldelwing
+- Carolina Delwing Rosa - https://github.com/caroldelwing
 - Zakiir Juman - https://github.com/zakiirjuman
