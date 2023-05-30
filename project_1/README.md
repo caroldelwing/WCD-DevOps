@@ -1,6 +1,8 @@
 # Project 1 - Linux Server on Aws 
 This project deploys an AWS cloud infrastructure using the AWS CLI command line tool and a Bash Shell script. The AWS cloud environment has a VPC, internet gateway, public subnet, public route table, and three EC2 instances. The EC2 instances must be in the same public subnet and VPC, reachable to each other, and accessible remotely by SSH. Moreover, the instances must have Python 3.10, Node 18.0, Java 11.0, and Docker engine installed.
 
+URL for the public GitHub repo: https://github.com/caroldelwing/WCD-DevOps/tree/main/project_1 
+
 ## Table of contents 
   - [Getting Started](#getting-started)
   - [Installation](#installation)
@@ -21,7 +23,7 @@ $ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.z
 $ unzip awscliv2.zip
 $ sudo ./aws/install
 ```
-Acess the following link for more info about how to install AWS CLI:
+Access the following link for more info about how to install AWS CLI:
 https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 To access your AWS account, execute the following command in your terminal: 
