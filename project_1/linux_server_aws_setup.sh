@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export AWS_PAGER=""
-
 REGION="us-east-1"
 SUBNET_PUBLIC_AZ="us-east-1a"
 

@@ -9,7 +9,6 @@ URL for the public GitHub repo: https://github.com/caroldelwing/WCD-DevOps/tree/
 - [Getting Started](#getting-started)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Removal](#removal)
 - [Network Diagram](#network-diagram)
 - [Authors](#authors)
 
@@ -66,16 +65,12 @@ The main script is responsible for creating the cloud architecture, while the au
 Running the script:
 
 ```sh
-$ chmod +x linux_server_aws_setup.sh userdata.sh cleanup.sh
+$ chmod +x linux_server_aws_setup.sh userdata.sh
 $ ./linux_server_aws_setup.sh
 ```
 
 After executing the script, go to the AWS Console in the us-east-1 region, and you will be able to see the EC2 instances running. Wait for the Status Checks to be completed to check the version of the software installed in each instance.
 If you want to rerun the same script, firstly you'll have to manually delete the created SSH key pair on the AWS Console and in your machine.
-
-## Removal
-
-You can try using `./cleanup.sh` to remove resources that are associated with the VPC. The script targets resources with `--filters "Name=tag:project,Values=wecloud"`.
 
 ## Network Diagram
 
