@@ -9,8 +9,13 @@ echo "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4
 # Update the package list
 sudo apt update
 
+<<<<<<< HEAD
 # Install MongoDB
 sudo apt install -y mongodb-org
+=======
+#List File for mongoDB 
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+>>>>>>> parent of 1a0801f... fixing ubuntu version for mongo db instalation
 
 # Install Mongosh
 sudo npm install -g mongosh
