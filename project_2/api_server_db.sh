@@ -176,7 +176,7 @@ echo "Listener for the ALB created successfully."
 
 #Create a launch template
 LAUNCH_TEMPLATE_ID=$(aws ec2 create-launch-template --launch-template-name project2-launch-template \
-    --launch-template-data "ImageId=ami-0aa2b7722dc1b5612,InstanceType=t2.micro,SecurityGroupIds=$SG_APP_ID,KeyName=project2_key,UserData=$(base64 -w 0 user-test.sh)" \
+    --launch-template-data "ImageId=ami-0aa2b7722dc1b5612,InstanceType=t2.micro,SecurityGroupIds=$SG_APP_ID,KeyName=project2_key,UserData=$(base64 -w 0 userdata.sh)" \
     --tag-specifications 'ResourceType=launch-template,Tags=[{Key=Name,Value=launchtemp_project2}, {Key=project,Value=wecloud}]' \
     --query 'LaunchTemplate.LaunchTemplateId' \
     --output text)  
@@ -210,7 +210,7 @@ DB_EC2=$(aws ec2 run-instances \
     --key-name project2_key \
     --subnet-id $SUBNET_PRIVATE \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=db-ec2}, {Key=project,Value=wecloud}]' \
-    --user-data file://user-test.sh \
+    --user-data file://userdata.sh \
     --security-group-ids $SG_DB_ID \
     --output text \
     --query 'Instances[0].InstanceId')
