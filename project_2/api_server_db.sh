@@ -126,10 +126,11 @@ SG_APP_ID=$(aws ec2 create-security-group \
     --query 'GroupId')
 echo "Security group $SG_APP_ID created successfully."
 
-#Enable the APP security group to allow HTTP, HTTPS access from the ALB SG
+#Enable the APP security group to allow HTTP, HTTPS access from the ALB SG and SSH from anywhere
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 80 --source-group $SG_ALB_ID
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 443 --source-group $SG_ALB_ID
-echo "Security group $SG_APP_ID authorized for HTTP and HTTPS ingress from the ALB SG."
+aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
+echo "Security group $SG_APP_ID authorized for HTTP and HTTPS ingress from the ALB SG, SSH authorized from anywhere."
 
 #Create Database Security Group
 SG_DB_ID=$(aws ec2 create-security-group \
@@ -141,7 +142,7 @@ SG_DB_ID=$(aws ec2 create-security-group \
     --query 'GroupId')
 echo "Security group $SG_DB_ID created successfully."
 
-#Enable the APP security group to allow access from the APP SG
+#Enable the DB security group to allow access from the APP SG.
 aws ec2 authorize-security-group-ingress --group-id $SG_DB_ID --protocol tcp --port 27017 --source-group $SG_APP_ID
 echo "Security group $SG_DB_ID authorized for ingress from the APP SG."
 
@@ -150,6 +151,7 @@ TG_ARN=$(aws elbv2 create-target-group --name project2-target-group \
     --protocol HTTP \
     --port 80 \
     --vpc-id $VPC_ID \
+    --tags "Key=Name,Value=target_group_project2" "Key=Project,Value=wecloud" \
     --query 'TargetGroups[0].TargetGroupArn' \
     --output text)
 echo "Target group $TG_ARN created successfully."
@@ -159,6 +161,7 @@ ALB_ARN=$(aws elbv2 create-load-balancer --name project2-load-balancer \
     --subnets $SUBNET1_PUBLIC $SUBNET2_PUBLIC \
     --security-groups $SG_ALB_ID \
     --type application \
+    --tags "Key=Name,Value=alb_project2" "Key=Project,Value=wecloud" \
     --query 'LoadBalancers[0].LoadBalancerArn' \
     --output text)
 echo "ALB $ALB_ARN created successfully."
@@ -167,12 +170,14 @@ echo "ALB $ALB_ARN created successfully."
 aws elbv2 create-listener --load-balancer-arn $ALB_ARN \
     --protocol HTTP \
     --port 80 \
+    --tags "Key=Name,Value=listener_project2" "Key=Project,Value=wecloud" \
     --default-actions Type=forward,TargetGroupArn=$TG_ARN
 echo "Listener for the ALB created successfully."
 
 #Create a launch template
 LAUNCH_TEMPLATE_ID=$(aws ec2 create-launch-template --launch-template-name project2-launch-template \
     --launch-template-data "ImageId=ami-0aa2b7722dc1b5612,InstanceType=t2.micro,SecurityGroupIds=$SG_APP_ID,KeyName=project2_key,UserData=$(base64 -w 0 user-test.sh)" \
+    --tag-specifications 'ResourceType=launch-template,Tags=[{Key=Name,Value=launchtemp_project2}, {Key=project,Value=wecloud}]' \
     --query 'LaunchTemplate.LaunchTemplateId' \
     --output text)  
 echo "Launch template $LAUNCH_TEMPLATE_ID created successfully."
@@ -184,8 +189,18 @@ aws autoscaling create-auto-scaling-group --auto-scaling-group-name project2-sca
     --max-size 4 \
     --desired-capacity 2 \
     --target-group-arns $TG_ARN \
-    --vpc-zone-identifier $SUBNET1_PUBLIC,$SUBNET2_PUBLIC
+    --vpc-zone-identifier $SUBNET1_PUBLIC,$SUBNET2_PUBLIC \
+    --tags "Key=Name,Value=asg_project2" "Key=Project,Value=wecloud" \
+    --health-check-type ELB \
+    --health-check-grace-period 300 \
+    --default-cooldown 300
 echo "Auto scaling group created successfully."
+
+#Create an scaling policy base on CPU Utilization
+aws autoscaling put-scaling-policy --policy-name cpu-scaling-policy \
+    --auto-scaling-group-name project2-scaling-group \
+    --policy-type TargetTrackingScaling \
+    --target-tracking-configuration "PredefinedMetricSpecification={PredefinedMetricType=ASGAverageCPUUtilization},TargetValue=80"
 
 #Create EC2 Instance Database
 DB_EC2=$(aws ec2 run-instances \
@@ -202,4 +217,4 @@ DB_EC2=$(aws ec2 run-instances \
 echo "Instance Database $DB_EC2 created successfully."
 
 
-############ Next steps: fix the tags, adjust the user data script, adjust the size of the EC2
+############ Next steps: adjust the user data script, adjust the size of the EC2, config health checks and target cpu utilization
