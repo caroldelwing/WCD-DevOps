@@ -146,6 +146,21 @@ echo "Security group $SG_DB_ID created successfully."
 aws ec2 authorize-security-group-ingress --group-id $SG_DB_ID --protocol tcp --port 27017 --source-group $SG_APP_ID
 echo "Security group $SG_DB_ID authorized for ingress from the APP SG."
 
+#Create EC2 Instance Database
+DB_EC2=$(aws ec2 run-instances \
+    --image-id ami-0aa2b7722dc1b5612 \
+    --count 1 \
+    --instance-type t2.micro \
+    --key-name project2_key \
+    --subnet-id $SUBNET_PRIVATE \
+    --private-ip-address 10.0.10.10 \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=db-ec2}, {Key=project,Value=wecloud}]' \
+    --user-data file://userdata.sh \
+    --security-group-ids $SG_DB_ID \
+    --output text \
+    --query 'Instances[0].InstanceId')
+echo "Instance Database $DB_EC2 created successfully."
+
 #Create a target group and retrieve the ARN
 TG_ARN=$(aws elbv2 create-target-group --name project2-target-group \
     --protocol HTTP \
@@ -176,7 +191,7 @@ echo "Listener for the ALB created successfully."
 
 #Create a launch template
 LAUNCH_TEMPLATE_ID=$(aws ec2 create-launch-template --launch-template-name project2-launch-template \
-    --launch-template-data "ImageId=ami-0aa2b7722dc1b5612,InstanceType=t2.micro,SecurityGroupIds=$SG_APP_ID,KeyName=project2_key,UserData=$(base64 -w 0 userdata.sh)" \
+    --launch-template-data "ImageId=ami-0aa2b7722dc1b5612,InstanceType=t2.micro,SecurityGroupIds=$SG_APP_ID,KeyName=project2_key,UserData=$(base64 -w 0 userdata_app.sh)" \
     --tag-specifications 'ResourceType=launch-template,Tags=[{Key=Name,Value=launchtemp_project2}, {Key=project,Value=wecloud}]' \
     --query 'LaunchTemplate.LaunchTemplateId' \
     --output text)  
@@ -201,20 +216,3 @@ aws autoscaling put-scaling-policy --policy-name cpu-scaling-policy \
     --auto-scaling-group-name project2-scaling-group \
     --policy-type TargetTrackingScaling \
     --target-tracking-configuration "PredefinedMetricSpecification={PredefinedMetricType=ASGAverageCPUUtilization},TargetValue=80"
-
-#Create EC2 Instance Database
-DB_EC2=$(aws ec2 run-instances \
-    --image-id ami-0aa2b7722dc1b5612 \
-    --count 1 \
-    --instance-type t2.micro \
-    --key-name project2_key \
-    --subnet-id $SUBNET_PRIVATE \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=db-ec2}, {Key=project,Value=wecloud}]' \
-    --user-data file://userdata.sh \
-    --security-group-ids $SG_DB_ID \
-    --output text \
-    --query 'Instances[0].InstanceId')
-echo "Instance Database $DB_EC2 created successfully."
-
-
-############ Next steps: adjust the user data script, adjust the size of the EC2, config health checks and target cpu utilization
