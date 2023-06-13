@@ -43,8 +43,8 @@ const { DB_HOST, DB_PORT, DB_NAME } = process.env;
       const cursor = await players.distinct("Team");
       res.json(cursor);
     });
-    app.listen(3000, () => {
-      console.log("Server started on port 3000");
+    app.listen(80, () => {
+      console.log("Server started on port 80");
     });
   } else {
     console.log("No database connection");
