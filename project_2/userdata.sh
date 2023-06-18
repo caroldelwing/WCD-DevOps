@@ -9,29 +9,29 @@ echo "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4
 # Update the package list
 sudo apt update
 
-# Install git
-sudo apt install git -y
+# Install Node.js and npm
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt install -y nodejs
 
 # Install MongoDB
 sudo apt install -y mongodb-org
 
-# Install Mongosh
-sudo npm install -g mongosh
+#Download the csv file from the GitHub repo
+curl -o nhl-stats-2022.csv https://raw.githubusercontent.com/caroldelwing/test/main/nhl-stats-2022.csv
 
-# Clone the project repository
-git clone https://github.com/caroldelwing/WCD-DevOps
-cd WCD-DevOps/project_2
+#Set the IP of the MongoDB host
+sudo sed -i 's/127.0.0.1/10.0.10.10,127.0.0.1/g' /etc/mongod.conf
 
 # Start the MongoDB service
 sudo service mongod start
- 
+
 # Specify the MongoDB connection details
-MONGO_HOST="localhost"
+# IP PRIVADO DA MAQUINA NO MONGO_HOST
+MONGO_HOST="10.0.10.10"
 MONGO_PORT="27017"
 MONGO_DB="WCD_project2"
 COLLECTION_NAME="nhl_stats_2022"
 CSV_FILE="nhl-stats-2022.csv"
 
 # Use mongoimport to import the CSV file into the specified MongoDB collection
-mongoimport --host $MONGO_HOST --port $MONGO_PORT --db $MONGO_DB --collection $COLLECTION_NAME --type csv --headerline --file $CSV_FILE
-
+sudo mongoimport --host $MONGO_HOST --port $MONGO_PORT --db $MONGO_DB --collection $COLLECTION_NAME --type csv --headerline --file $CSV_FILE

@@ -1,7 +1,39 @@
 #!/bin/bash
-sudo apt update -y
-sudo apt install -y curl git nodejs npm
-git clone https://github.com/caroldelwing/WCD-DevOps.git
-cd WCD-DevOps/project_2
+
+#Update packages
+sudo apt update
+
+#Download the app.js and package.json from the GitHub repo
+curl -o app.js https://raw.githubusercontent.com/caroldelwing/test/main/app.js
+curl -o package.json https://raw.githubusercontent.com/caroldelwing/test/main/package.json
+
+#Install dependencies
+sudo apt install -y dirmngr apt-transport-https lsb-release ca-certificates
+
+#Add the NodeSource repository's signing key
+curl -sL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/nodesource.gpg
+
+#Setup NodeSource repository for Node16
+echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_16.x $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+#Update packages again
+sudo apt update
+
+#Install nodejs
+sudo apt install -y nodejs
+
+#install npm v9
+sudo npm install -y -g npm@9.7.1
+
+#Install npm
 npm install
-TESTDB_HOST=testdb DB_HOST=10.0.10.10 DB_PORT=27017 DB_NAME=WCD_project2 npm run start:dev
+
+#Set the application variables
+#MUDAR IP DA MAQUINA
+export TESTDB_HOST="testdb"
+export DB_HOST="10.0.10.10"
+export DB_PORT="27017"
+export DB_NAME="WCD_project2"
+
+#Start the application
+npm start

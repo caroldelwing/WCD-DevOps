@@ -13,17 +13,13 @@ const { DB_HOST, DB_PORT, DB_NAME } = process.env;
     const players = db.collection("nhl_stats_2022");
 
     //error if there are no documents in the collection
-    //if ((await players.countDocuments({})) === 0) {
-    //  console.log("No documents in players collection   ...exiting");
-    //  process.exit(1);
-    //}
-
-    app.get("/", (req, res) => {
-      res.send("Hello World!");
-    });
+    if ((await players.countDocuments({})) === 0) {
+      console.log("No documents in players collection   ...exiting");
+      process.exit(1);
+    }
 
     //return all documents in the nhl_stats_2022 collection
-    app.get("/players", async (req, res) => {
+    app.get("/", async (req, res) => {
       const cursor = await players.find({});
       const results = await cursor.toArray();
       res.json(results);
@@ -32,14 +28,14 @@ const { DB_HOST, DB_PORT, DB_NAME } = process.env;
     app.get("/players/top/:number", async (req, res) => {
       //convert the number to an integer
       const number = parseInt(req.params.number);
-      const cursor = await players.find({}).sort({ Pts: -1 }).limit(number);
+      const cursor = await players.find({}).sort({ Pts: -1 }).limit(number).project({ _id: 0, "Player Name": 1, Team: 1, Pts: 1 });
       const results = await cursor.toArray();
       res.json(results);
     });
     //returns all players with teamName
     app.get("/players/team/:teamName", async (req, res) => {
       const cursor = await players.find({ Team: req.params.teamName });
-      const results = await cursor.toArray();
+      const results = await cursor.project({ _id: 0, "Player Name": 1, Team: 1, Pts: 1 }).toArray();
       res.json(results);
     });
     //list all team names
@@ -47,8 +43,8 @@ const { DB_HOST, DB_PORT, DB_NAME } = process.env;
       const cursor = await players.distinct("Team");
       res.json(cursor);
     });
-    app.listen(80, () => {
-      console.log("Server started on port 80");
+    app.listen(3000, () => {
+      console.log("Server started on port 3000");
     });
   } else {
     console.log("No database connection");
@@ -58,7 +54,6 @@ const { DB_HOST, DB_PORT, DB_NAME } = process.env;
 async function createConnection(host, port, dbName) {
   const url = `mongodb://${host}:${port}`; // Replace with your MongoDB connection string
   //const dbName = "my-database"; // Replace with your database name
-
   try {
     const client = await MongoClient.connect(url);
     const db = client.db(dbName);
@@ -70,4 +65,4 @@ async function createConnection(host, port, dbName) {
     console.log(error);
     return null;
   }
-}
+}  
