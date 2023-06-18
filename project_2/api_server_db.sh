@@ -129,9 +129,33 @@ echo "Security group $SG_APP_ID created successfully."
 #Enable the APP security group to allow HTTP, HTTPS access from the ALB SG and SSH from anywhere
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 80 --source-group $SG_ALB_ID
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 443 --source-group $SG_ALB_ID
+aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 3000 --source-group $SG_ALB_ID
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
 echo "Security group $SG_APP_ID authorized for HTTP and HTTPS ingress from the ALB SG, SSH authorized from anywhere."
+##########################################
 
+#Allocate the Elastic IP
+EIP_ALLOC_ID=$(aws ec2 allocate-address \
+    --query 'AllocationId' --output text)
+echo "Elastic IP allocated successfully."
+
+#Create a NAT Gateway
+NAT_GW_ID=$(aws ec2 create-nat-gateway \
+    --subnet-id $SUBNET1_PUBLIC \
+    --allocation-id $EIP_ALLOC_ID \
+    --query 'NatGateway.NatGatewayId' \
+    --output text)
+echo "NAT Gateway $NAT_GW_ID created successfully."
+
+#Wait for the NAT Gateway to be available
+aws ec2 wait nat-gateway-available --nat-gateway-ids $NAT_GW_ID
+echo "NAT Gateway available to be used."
+
+#Add a route to the NAT Gateway in the private route table
+aws ec2 create-route --route-table-id $RT_PRIVATE --destination-cidr-block 0.0.0.0/0 --gateway-id $NAT_GW_ID
+echo "Route created in the private subnet to the NAT Gateway."
+
+##########################################
 #Create Database Security Group
 SG_DB_ID=$(aws ec2 create-security-group \
     --group-name project2_db_sg \
@@ -145,6 +169,7 @@ echo "Security group $SG_DB_ID created successfully."
 #Enable the DB security group to allow access from the APP SG.
 aws ec2 authorize-security-group-ingress --group-id $SG_DB_ID --protocol tcp --port 27017 --source-group $SG_APP_ID
 echo "Security group $SG_DB_ID authorized for ingress from the APP SG."
+aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 27017 --source-group $SG_DB_ID
 
 #Create EC2 Instance Database
 DB_EC2=$(aws ec2 run-instances \
@@ -164,7 +189,7 @@ echo "Instance Database $DB_EC2 created successfully."
 #Create a target group and retrieve the ARN
 TG_ARN=$(aws elbv2 create-target-group --name project2-target-group \
     --protocol HTTP \
-    --port 80 \
+    --port 3000 \
     --vpc-id $VPC_ID \
     --tags "Key=Name,Value=target_group_project2" "Key=Project,Value=wecloud" \
     --query 'TargetGroups[0].TargetGroupArn' \
@@ -206,8 +231,6 @@ aws autoscaling create-auto-scaling-group --auto-scaling-group-name project2-sca
     --target-group-arns $TG_ARN \
     --vpc-zone-identifier $SUBNET1_PUBLIC,$SUBNET2_PUBLIC \
     --tags "Key=Name,Value=asg_project2" "Key=Project,Value=wecloud" \
-    --health-check-type ELB \
-    --health-check-grace-period 300 \
     --default-cooldown 300
 echo "Auto scaling group created successfully."
 
