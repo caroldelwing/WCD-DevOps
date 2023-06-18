@@ -17,7 +17,7 @@ sudo apt install -y nodejs
 sudo apt install -y mongodb-org
 
 #Download the csv file from the GitHub repo
-curl -o nhl-stats-2022.csv https://raw.githubusercontent.com/caroldelwing/test/main/nhl-stats-2022.csv
+curl -o nhl-stats-2022.csv https://raw.githubusercontent.com/caroldelwing/WCD-DevOps/main/project_2/nhl-stats-2022.csv
 
 #Set the IP of the MongoDB host
 sudo sed -i 's/127.0.0.1/10.0.10.10,127.0.0.1/g' /etc/mongod.conf

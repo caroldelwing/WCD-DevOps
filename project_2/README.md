@@ -1,6 +1,8 @@
 # Project 2 - API Server and Databases
 
-In this project you will deploy an API microservice connected to a database. This API will have exposed endpoints that users can send HTTP requests to and get a response. Data will be returned to users as JSON payloads. AWS cloud infrastructure using the AWS CLI command line tool in bash shell scripts. Specifically, the AWS cloud environment will have a VPC, internet gateway, public subnet, public route table, EC2 instances.
+This project deploys a Nodejs API microservice connected to a MongoDB database using Bash Script. This API will have exposed endpoints that users can send HTTP requests to and get a response as JSON payloads. 
+
+This project is composed of a main script (api_server_db.sh) and auxiliary scripts. The main script is responsible for deploying the AWS cloud infrastructure using AWS CLI. Specifically, the AWS architecture will have a VPC, internet gateway, two public subnets, public route table, public EC2 instances, auto-scaling group, application load balancer, security groups, NAT Gateway, one private subnet, private route table, and private EC2 instance.
 
 URL for the public GitHub repo: https://github.com/caroldelwing/WCD-DevOps/tree/main/project_2
 
@@ -31,7 +33,7 @@ $ sudo ./aws/install
 Access the following link for more info about how to install AWS CLI:
 https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-To access your AWS account, execute the following command in your terminal:
+To have access to your AWS account through your IAM user, execute the following command in your terminal:
 
 ```sh
 $ aws configure
@@ -42,7 +44,7 @@ Default output format [None]:
 ```
 ## Installation
 
-Option 1: Clone this repository. For this option, you will need to install git on your terminal first, then clone the repository:
+Option 1: Clone this repository. For this option, you will need to install Git on your terminal first, then clone the repository:
 
 To install Git, please go to this link and follow the steps:
 https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
@@ -53,24 +55,33 @@ Cloning the repository:
 $ git clone https://github.com/caroldelwing/WCD-DevOps
 ```
 
-Option 2: Download the scripts and save in your local machine.
+Option 2: Download the scripts and save them on your local machine.
 
 ## Usage
 
-To execute the script, in your terminal, navigate to the folder where the scripts are stored. Then, grant execution permission to both main (api_server_db.sh) and auxiliary (userdata.sh, userdata_app.sh) scripts. Lastly, execute the main script.
+To execute the script in your terminal, navigate to the folder where the scripts are stored. Then, grant execution permission to the main script (api_server_db.sh). Lastly, execute the main script.
 
 Running the script:
 
 ```sh
-$ chmod +x api_server_db.sh userdata.sh userdata_app.sh
+$ chmod +x api_server_db.sh
 $ ./api_server_db.sh
 ```
 
-The main script is responsible for creating the cloud architecture,the infraestructure to run our application. The userdata.sh auxiliary script is responsible to install mongo db and create our database and collection using data from a csv file. The userdata_app.sh script is respnsible for calling and runing the js application. 
+The main script is responsible for creating the cloud architecture, while the userdata.sh auxiliary script is used for the database EC2 instance at the launch time, and it's responsible for installing MongoDB, creating the database, and collection using data from a csv file. Lastly, the userdata_app.sh script is used by the application EC2 instance at launch time and it's responsible for calling and runing the js application. 
 
-##Testing the Results   
+## Testing the Results
 
+The csv file called "nhl-stats-2022.csv" has data on NHL hockey players, their goals, assists and points.
+After executing the main script, go to your AWS account on the console in the region you launched the AWS infrastructure, click on EC2 dashboard, and then on Load Balancer. Select the project_2 Load Balancer, copy its DNS name, and paste it into your web browser followed by the desired route:
 
+route "/" -> returns all documents in the nhl_stats_2022 collection.
+route "/players/top/:number" -> returns top players. For example, /players/top/10 will return the top 10 players leading in points scored.
+route "/players/team/:teamName" -> returns all players of a team. For example, /players/team/TOR will return all players of Tornto Maple Leafs.
+route "/teams" -> returns a list of all teams.
+
+## Diagram
+![AWS Diagram of Project 2](./project2.jpg)
 
 ## Authors
 

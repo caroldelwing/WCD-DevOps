@@ -126,13 +126,11 @@ SG_APP_ID=$(aws ec2 create-security-group \
     --query 'GroupId')
 echo "Security group $SG_APP_ID created successfully."
 
-#Enable the APP security group to allow HTTP, HTTPS access from the ALB SG and SSH from anywhere
+#Enable the APP security group to allow HTTP, HTTPS, and port 3000 access from the ALB SG
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 80 --source-group $SG_ALB_ID
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 443 --source-group $SG_ALB_ID
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 3000 --source-group $SG_ALB_ID
-aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
-echo "Security group $SG_APP_ID authorized for HTTP and HTTPS ingress from the ALB SG, SSH authorized from anywhere."
-##########################################
+echo "Security group $SG_APP_ID authorized for HTTP and HTTPS ingress from the ALB SG."
 
 #Allocate the Elastic IP
 EIP_ALLOC_ID=$(aws ec2 allocate-address \
@@ -148,6 +146,7 @@ NAT_GW_ID=$(aws ec2 create-nat-gateway \
 echo "NAT Gateway $NAT_GW_ID created successfully."
 
 #Wait for the NAT Gateway to be available
+echo "Waiting for NAT Gateway to be available..."
 aws ec2 wait nat-gateway-available --nat-gateway-ids $NAT_GW_ID
 echo "NAT Gateway available to be used."
 
@@ -155,7 +154,6 @@ echo "NAT Gateway available to be used."
 aws ec2 create-route --route-table-id $RT_PRIVATE --destination-cidr-block 0.0.0.0/0 --gateway-id $NAT_GW_ID
 echo "Route created in the private subnet to the NAT Gateway."
 
-##########################################
 #Create Database Security Group
 SG_DB_ID=$(aws ec2 create-security-group \
     --group-name project2_db_sg \
@@ -169,7 +167,10 @@ echo "Security group $SG_DB_ID created successfully."
 #Enable the DB security group to allow access from the APP SG.
 aws ec2 authorize-security-group-ingress --group-id $SG_DB_ID --protocol tcp --port 27017 --source-group $SG_APP_ID
 echo "Security group $SG_DB_ID authorized for ingress from the APP SG."
+
+#Enable the APP security group to allow access from the DB SG.
 aws ec2 authorize-security-group-ingress --group-id $SG_APP_ID --protocol tcp --port 27017 --source-group $SG_DB_ID
+echo "Security group $SG_APP_ID authorized for ingress from the DB SG."
 
 #Create EC2 Instance Database
 DB_EC2=$(aws ec2 run-instances \

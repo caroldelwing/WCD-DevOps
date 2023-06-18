@@ -4,8 +4,8 @@
 sudo apt update
 
 #Download the app.js and package.json from the GitHub repo
-curl -o app.js https://raw.githubusercontent.com/caroldelwing/test/main/app.js
-curl -o package.json https://raw.githubusercontent.com/caroldelwing/test/main/package.json
+curl -o app.js https://raw.githubusercontent.com/caroldelwing/WCD-DevOps/main/project_2/app.js
+curl -o package.json https://raw.githubusercontent.com/caroldelwing/WCD-DevOps/main/project_2/package.json
 
 #Install dependencies
 sudo apt install -y dirmngr apt-transport-https lsb-release ca-certificates
