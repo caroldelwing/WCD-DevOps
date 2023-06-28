@@ -1,0 +1,15 @@
+#Base image
+FROM mongo:latest
+
+#Set the working dir
+WORKDIR /data
+
+#Copy the CSV file and entrypoint script from host to container
+COPY nhl-stats-2022.csv ./
+COPY entrypoint.sh ./
+
+#Make the entrypoint script executable
+RUN chmod +x entrypoint.sh
+
+#Execute the entrypoint script
+CMD ["./entrypoint.sh"]
