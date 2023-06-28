@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.mongodb
+    restart: always
+    volumes:
+      - db-data:/data/db
+    ports:
+      - 27017:27017
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=27017
+      - DB_NAME=WCD_project2
+    ports:
+      - 3000:3000
+volumes:
+  db-data:
