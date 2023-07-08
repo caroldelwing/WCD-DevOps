@@ -81,7 +81,7 @@ route "/players/team/:teamName" -> returns all players of a team. For example, /
 route "/teams" -> returns a list of all teams.
 
 ## Diagram
-![AWS Diagram of Project 2](./project2.jpg)
+![AWS Diagram of Project 2](./project_2.jpg)
 
 ## Authors
 
