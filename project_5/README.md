@@ -94,7 +94,7 @@ Available routes:
 
 ## Diagram
 
-
+![AWS Diagram of Projects 3 and 4](./project_5_Diagram.jpg)
 
 ## Authors
 
