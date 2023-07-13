@@ -4,7 +4,7 @@ This project deploys a containerized web app onto a two-worker-node cloud produc
 
 This repository is composed of two Deployment YAML files (app-deployment.yaml, mongo-deployment.yaml), and two service YAML files (app-service.yaml, mongo-service.yaml). While the deployment manifests are responsible for deploying the nodejs application and mongoDB database in different pods, the service manifests are responsible for exposing the Pods over a network, defining a logical set of endpoints along with a policy about how to make those pods accessible.
 
-URL for the public GitHub repository: https://github.com/caroldelwing/WCD-DevOps
+URL for the public GitHub repository: [https://github.com/caroldelwing/WCD-DevOps/tree/main/project_5]
 
 ## Table of contents
 
