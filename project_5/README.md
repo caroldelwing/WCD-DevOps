@@ -81,10 +81,10 @@ $ git clone https://github.com/caroldelwing/WCD-DevOps.git
 
 - Go to project_5 folder and you'll find the manifests. Deploy the application by running these commands:
 ```sh
-kubectl -f apply mongo-service.yaml
-kubectl -f apply mongo-deployment.yaml
-kubectl -f apply app-service.yaml
-kubectl -f apply app-deployment.yaml
+kubectl apply -f mongo-service.yaml
+kubectl apply -f mongo-deployment.yaml
+kubectl apply -f app-service.yaml
+kubectl apply -f app-deployment.yaml
 ```
 ## Testing the Results
 
