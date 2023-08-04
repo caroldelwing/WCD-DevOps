@@ -1,0 +1,126 @@
+- name: Jenkins Server Deployment and Configuration
+  hosts: localhost
+  gather_facts: no
+  vars:
+    aws_region: us-east-1
+    subnet_jenkins_public_az: us-east-1a
+
+  tasks:
+
+    - name: get vpc info
+      amazon.aws.ec2_vpc_net_info:
+        filters:
+          "tag:name": vpc_project7
+      register: vpc
+
+    - name: Extract VPC ID
+      set_fact:
+        vpc_id: "{{ vpc.vpcs[0].vpc_id }}"
+           
+    - name: Create Jenkins Public Subnet 1
+      amazon.aws.ec2_vpc_subnet:
+        state: present
+        map_public: true
+        vpc_id: "{{ vpc_id }}"
+        cidr: 10.0.11.0/24
+        az: "{{ subnet_jenkins_public_az }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: subnet_jenkins_project7
+          project: wecloud
+      register: subnet_jenkins_public
+
+    - name: Gather information about public route table with a tag key Name and value
+      amazon.aws.ec2_vpc_route_table_info:
+        filters:
+          "tag:name": public_rt_project7
+      register: public_rt
+
+    - name: Extract RT ID
+      set_fact:
+        rt_id: "{{ public_rt.route_tables[0].id }}"   
+
+    - name: Associate Jenkins Public Subnet to Public Route Table
+      amazon.aws.ec2_vpc_route_table:
+        route_table_id: "{{ rt_id }}" 
+        vpc_id: "{{ vpc_id }}"   
+        region: "{{ aws_region }}"
+        state: present
+        purge_tags: false
+        purge_routes: false
+        purge_subnets: false
+        tags:
+          name: public_rt_project7
+          project: wecloud
+        subnets:
+          - "{{ subnet_jenkins_public.subnet.id }}" 
+
+    - name: Create Jenkins Server Security Group
+      amazon.aws.ec2_security_group:
+        name: jenkins_sg_project7
+        description: "Jenkins sg"
+        vpc_id: "{{  vpc_id }}" 
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+            - 22
+            - 8080
+            cidr_ip: 0.0.0.0/0
+            rule_desc: allow all on port 80, 443, and 22
+        tags:
+          name: jenkins_sg_project7
+          project: wecloud
+      register: sg_jenkins
+    
+    - name: Create a Jenkins EC2 Key Pair, Returns Generated Private Key
+      amazon.aws.ec2_key:
+        force: true
+        name: jenkins_key_project7
+        region: "{{ aws_region }}"
+        key_type: rsa
+        tags:
+          name: jenkins_key_project7
+          project: wecloud
+      register: jenkins_key_pair
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        content: "{{ jenkins_key_pair.key.private_key }}"
+        dest: /home/ubuntu/WCD-DevOps/project_7/jenkins_key_pair.pem
+        mode: '0400'  
+    
+    - name: Create EC2 Instance for Jenkins
+      amazon.aws.ec2_instance:
+        name: jenkins_ec2_project7
+        instance_type: t2.micro
+        image_id: ami-0aa2b7722dc1b5612
+        key_name: jenkins_key_project7
+        region: "{{ aws_region }}"
+        vpc_subnet_id: "{{ subnet_jenkins_public.subnet.id }}"  
+        security_group: jenkins_sg_project7
+        state:  running
+        wait:  true
+        tags:
+          name: jenkins_ec2_project7
+          project: wecloud
+      register: jenkins_instance
+
+    - name: Extract Jenkins EC2 Public IP
+      set_fact:
+        jenkins_ip: "{{ jenkins_instance.instances[0].public_ip_address }}"
+
+    - name: Add a new host to the inventory file
+      ansible.builtin.lineinfile:
+        path: /home/ubuntu/WCD-DevOps/project_7/hosts
+        line: '{{ item }}'
+      with_items:
+      - '[jenkins]'
+      - '{{ jenkins_ip }} ansible_ssh_private_key_file=/home/ubuntu/WCD-DevOps/project_7/jenkins_key_pair.pem'
+
+    - name: Wait for SSH to be available on the EC2 instance
+      wait_for:
+        host: "{{ jenkins_ip }}"
+        port: 22
+        state: started
+        timeout: 300

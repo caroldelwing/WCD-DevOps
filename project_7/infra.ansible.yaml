@@ -13,6 +13,7 @@
         cidr_block: 10.0.0.0/16
         region: "{{ aws_region }}"
         tags:
+          name: vpc_project7
           project: wecloud
       register: vpc
 
