@@ -1,0 +1,269 @@
+- name: Create AWS Infrastructure
+  hosts: localhost
+  gather_facts: no
+  vars:
+    aws_region: us-east-1
+    subnet1_public_az: us-east-1a
+    subnet2_public_az: us-east-1b
+
+  tasks:
+    - name: Create VPC
+      amazon.aws.ec2_vpc_net:
+        name: vpc_project7
+        cidr_block: 10.0.0.0/16
+        region: "{{ aws_region }}"
+        tags:
+          name: vpc_project7
+          project: wecloud
+      register: vpc
+
+    - name: Create Internet Gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+        tags:
+          name: igw_project7
+          project: wecloud
+      register: igw
+
+    - name: Create Public Subnet 1
+      amazon.aws.ec2_vpc_subnet:
+        state: present
+        map_public: true
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.0.0/24
+        az: "{{ subnet1_public_az }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: subnet1_public_project7
+          project: wecloud
+      register: subnet1_public
+
+    - name: Create Public Subnet 2
+      amazon.aws.ec2_vpc_subnet:
+        state: present
+        map_public: true
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.9.0/24
+        az: "{{ subnet2_public_az }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: subnet2_public_project7
+          project: wecloud
+      register: subnet2_public
+    
+    - name: Create Public Route Table and Add Route to IGW
+      amazon.aws.ec2_vpc_route_table:
+        state: present
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: public_rt_project7
+          project: wecloud
+        subnets:
+          - "{{ subnet1_public.subnet.id }}"
+          - "{{ subnet2_public.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+      register: public_route_table
+    
+    - name: Create Private Subnet
+      amazon.aws.ec2_vpc_subnet:
+        state: present
+        map_public: false
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.10.0/24
+        az: "{{ subnet1_public_az }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: subnet_private_project7
+          project: wecloud
+      register: subnet_private
+  
+    - name: Create a New EC2 Key Pair, Returns Generated Private Key
+      amazon.aws.ec2_key:
+        force: true
+        name: key_project7
+        region: "{{ aws_region }}"
+        key_type: rsa
+        tags:
+          name: key_project7
+          project: wecloud
+      register: key_pair
+
+    - name: Create ALB Security Group
+      amazon.aws.ec2_security_group:
+        name: alb_sg_project7
+        description: "Application Load Balancer sg"
+        vpc_id: "{{  vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+            - 80
+            - 443
+            cidr_ip: 0.0.0.0/0
+            rule_desc: allow all on port 80 and 443
+        tags:
+          name: alb_sg_project7
+          project: wecloud
+      register: sg_alb
+
+    - name: Create Application Security Group
+      amazon.aws.ec2_security_group:
+        name: app_sg_project7
+        description: "Application SG"
+        vpc_id: "{{  vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+            - 80
+            - 443
+            - 3000
+            group_name: alb_sg_project7
+            rule_desc: allow from alb sg on port 80,443,3000
+        tags:
+          name: app_sg_project7
+          project: wecloud
+      register: sg_app
+
+    - name: Create Database Security Group
+      amazon.aws.ec2_security_group:
+        name: db_sg_project7
+        description: "Database SG"
+        vpc_id: "{{  vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+            - 27017
+            group_name: app_sg_project7
+            rule_desc: allow from app sg on port 27017
+        tags:
+          name: db_sg_project7
+          project: wecloud
+      register: sg_db
+
+    - name: Create NAT Gateway, allocate new EIP (automatic)
+      amazon.aws.ec2_vpc_nat_gateway:
+        state: present
+        subnet_id: "{{ subnet1_public.subnet.id }}"
+        wait: true
+        region: "{{ aws_region }}"
+        tags:
+          name: nat_gw_project7
+          project: wecloud
+      register: nat_gw
+
+    - name: Create Private Route Table
+      amazon.aws.ec2_vpc_route_table:
+        state: present
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        tags:
+          name: private_rt_project7
+          project: wecloud
+        subnets:
+          - "{{ subnet_private.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ nat_gw.nat_gateway_id }}"  
+      register: private_route_table
+
+    - name: Create EC2 Instance for Database
+      amazon.aws.ec2_instance:
+        name: db_ec2_project7
+        instance_type: t2.micro
+        image_id: ami-0aa2b7722dc1b5612
+        key_name: key_project7
+        region: "{{ aws_region }}"
+        vpc_subnet_id: "{{ subnet_private.subnet.id }}"  
+        network:
+          private_ip_address: "10.0.10.10"  
+        security_group: db_sg_project7
+        user_data: "{{ lookup('file', 'userdata.sh') }}"
+        tags:
+          name: db_ec2_project7
+          project: wecloud
+      register: db_instance
+
+    - name: Create a target group with a default health check
+      community.aws.elb_target_group:
+        name: target-group-project7
+        protocol: http
+        port: 3000
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ aws_region }}"
+        state: present
+        tags:
+          name: target_group_project7
+          project: wecloud
+      register: target_group
+
+    - name: Create an ALB and attach a listener
+      amazon.aws.elb_application_lb:
+        name: load-balancer-project7
+        region: "{{ aws_region }}"
+        security_groups:
+          - alb_sg_project7
+        subnets:
+          - "{{ subnet1_public.subnet.id }}"
+          - "{{ subnet2_public.subnet.id }}"
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: target-group-project7
+        state: present
+        tags:
+          name: load_balancer_project7
+          project: wecloud
+      register: alb
+
+    - name: Create an ec2 launch template
+      community.aws.ec2_launch_template:
+        name: launch-template-project7
+        image_id: ami-0aa2b7722dc1b5612
+        key_name: key_project7
+        instance_type: t2.micro
+        region: "{{ aws_region }}"
+        security_group_ids: 
+          - "{{ sg_app.group_id }}"
+        tags:
+          name: launch_template_project7
+          project: wecloud  
+        user_data: "{{ lookup('file', 'userdata_app.sh') | b64encode }}"
+
+    - name: Create ASG with Launch Teamplate
+      amazon.aws.autoscaling_group:
+        name: asg-project7
+        region: "{{ aws_region }}"
+        availability_zones: [ 'us-east-1a', 'us-east-1b' ]
+        launch_template:
+          launch_template_name: launch-template-project7
+        min_size: 2
+        max_size: 4
+        desired_capacity: 2
+        target_group_arns:
+          - "{{ target_group.target_group_arn }}"
+        vpc_zone_identifier: [ "{{ subnet1_public.subnet.id }}", "{{ subnet2_public.subnet.id }}" ]
+        tags:
+          - name: asg_project7
+            project: wecloud
+
+    - name: Create a scaling policy base on CPU Utilization
+      community.aws.autoscaling_policy:
+        state: present
+        region: "{{ aws_region }}"
+        name: cpu-scaling-policy
+        policy_type: TargetTrackingScaling
+        asg_name: asg-project7
+        scaling_adjustment: 1
+        cooldown: 300
+        target_tracking_config:
+          predefined_metric_spec:
+            predefined_metric_type: ASGAverageCPUUtilization
+          target_value: 80
