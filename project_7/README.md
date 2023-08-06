@@ -1,8 +1,14 @@
-# Projects 7 -  Infrastructure Provisioning Automation
+# Project 7 -  Infrastructure Provisioning Automation with Ansible and Terraform
 
-This project deploys AWS infrastructure using infrastructure provisioning automation tools.The infrastructures that are deployed will then be used to host web apps.In this project, Ansible is used to set up the API and database infrastructure, and start up a Jenkins server inside a EC2. And Terraform is used to drploy a entire AWS EKS cluster.  
+This project deploys AWS infrastructure using infrastructure provisioning automation tools (Infrastructure as Code). There are three sets of infrastructure components that will be deployed on AWS:
+- EC2 servers to host a web app architecture with API and Database (using Ansible);
+- EC2 instance hosting a Jenkins server (using Ansible);
+- Functional AWS EKS cluster hosting a web app with API and Database (using Terraform).
 
-This repository is composed of to Deployment YAML files (app-deployment.yaml, mongo-deployment.yaml), two service YAML files (app-service.yaml, mongo-service.yaml), three ansible playbooks (infra.ansible.yaml, jenkins.ansible.yaml,jenkinsinfra.ansible.yaml), two bash scripts (userdata.sh , userdata_app.sh) and six terraform configuration files (eks-cluster.tf, main.tf, outputs.tf, terraform.tf, variable.tf, vpc.tf).
+This repository is composed of the following YAML, Terraform, and Bash Script files:
+- Part 1: infra.ansible.yaml, userdata.sh, userdata_app.sh.
+- Part 2: jenkins.ansible.yaml,jenkinsinfra.ansible.yaml.
+- Part 3: app-deployment.yaml, mongo-deployment.yaml, app-service.yaml, mongo-service.yaml, eks-cluster.tf, main.tf, outputs.tf, terraform.tf, variable.tf, vpc.tf.
 
 URL for the public GitHub repository: [https://github.com/caroldelwing/WCD-DevOps/tree/main/project_7]
 
@@ -19,8 +25,8 @@ URL for the public GitHub repository: [https://github.com/caroldelwing/WCD-DevOp
 
 - AWS account;
 - IAM user with sufficient rights;
-- Access to a linux terminal;
-- Have AWS CLI, git , python3, pip, botocore, boto3, ansible and  installed on your machine;
+- Access to a Linux terminal;
+- Have AWS CLI, git , python3, pip, botocore, boto3, ansible and Terraform CLI installed on your Linux machine;
 - Basic knowledge of Ansible, Terraform, AWS EKS, and Git. 
 
 ## Installation
@@ -52,7 +58,6 @@ sudo apt install python3-pip
 pip3 install botocore boto3
 ```
 
-
 ## Getting Started
 
 - To have access to your AWS account through your IAM user, execute the following command in your terminal
@@ -64,25 +69,23 @@ Default region name [None]: us-east-1
 Default output format [None]:
 ```
 
--Clone this repository and open project 7 directory:
+- In your terminal, clone this repository and navigate to the project 7 folder:
 ```
 git clone https://github.com/caroldelwing/WCD-DevOps
-
-#change directory:
-cd WCD-DevOps/project7
+cd WCD-DevOps/project_7
 ```
- Make sure your path to project 7 is home/ubuntu/WCD-DevOps/project_7
+ Make sure your path to project 7 is **home/ubuntu/WCD-DevOps/project_7**, otherwise, you will have to edit the path in the part 2 Ansible files.
 
 ## Usage
 
-- Execute the ansible playbooks in the following order:
+- Execute the Ansible playbooks in the following order (parts 1 and 2):
 ```sh
 ansible-playbook infra.ansible.yaml
 ansible-playbook jenkinsinfra.ansible.yaml
 ansible-playbook -i hosts jenkins.ansible.yaml
 ```
 
-- Deploy cluster with terraform:
+- Deploy the EKS Cluster with Terraform (part 3):
 ```sh
 terraform init
 ```
@@ -96,10 +99,37 @@ terraform plan
 terraform apply -auto-approve
 ```
 
-## Testing the Results
+- Once your EKS cluster is up and running, configure kubectl to interact with your cluster by running this command in your terminal:
+```sh
+aws eks update-kubeconfig --region <region> --name <EKS_cluster_name>
+```
+- Then, deploy the application by running the manifests in the following order:
+```sh
+kubectl -f apply mongo-service.yaml
+kubectl -f apply mongo-deployment.yaml
+kubectl -f apply app-service.yaml
+kubectl -f apply app-deployment.yaml
+```
 
-Copy the public IP of your EC2 instance, and paste it on your web browser according to the model below, editing the route according to the desired output:
+## Testing the Results
+- Part 1: copy the public IP of your EC2 instances that belong to the autoscaling group, and paste it on your web browser according to the model below, editing the route according to the desired output:
 <PublicIPV4>:3000/
+
+Available routes:
+
+- `/` - returns all documents in the nhl_stats_2022 collection.
+- `/players/top/:number` - returns top players. For example, /players/top/10 will return the top 10 players leading in points scored.
+- `/players/team/:teamname` - returns all players of a team. For example, /players/team/TOR will return all players of Toronto Maple Leafs.
+- `/teams` - returns a list of the teams.
+
+- Part 2: copy the public IP of the Jenkins EC2 instance and paste it on your web browser according to the model below:
+<PublicIPV4>:8080
+
+- Part 3: use the following command to get the external ip of the load balancer:
+```sh
+kubectl get services
+```
+Paste the load balancer external ip (which is the load balancer address) in your browser and add the desired route. 
 
 Available routes:
 
@@ -110,7 +140,8 @@ Available routes:
 
 ## Diagram
 
-
+![AWS Diagram of Project 7, parts 1 and 2](./project7_part12.jpg)
+![AWS Diagram of Project 7, part 3](./project7_part3.jpg)
 
 ## Authors
 
