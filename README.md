@@ -21,3 +21,10 @@ of the containers was done using the Kubernetes stack.
 ### [Project 6](https://github.com/caroldelwing/WCD-DevOps/tree/main/project_6) - AWS EKS Cluster Monitoring
   • Deploy a containerized web application onto a cloud-production Kubernetes (EKS) cluster.
   • Monitor the cluster and the application metrics and logs using Prometheus, Loki, and Grafana.
+
+### [Project 7](https://github.com/caroldelwing/WCD-DevOps/tree/main/project_7) - Infrastructure Provisioning Automation
+  • Deploy AWS infrastructure using infrastructure provisioning automation tools (Infrastructure as Code). 
+  • There are three sets of infrastructure components:
+    - EC2 servers to host a web app architecture with API and Database (using Ansible);
+    - EC2 instance hosting a Jenkins server (using Ansible);
+    - Functional AWS EKS cluster hosting a web app with API and Database (using Terraform).
