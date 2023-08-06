@@ -112,8 +112,7 @@ kubectl -f apply app-deployment.yaml
 ```
 
 ## Testing the Results
-- Part 1: copy the public IP of your EC2 instances that belong to the autoscaling group, and paste it on your web browser according to the model below, editing the route according to the desired output:
-<PublicIPV4>:3000/
+- Part 1: copy the public IP of your EC2 instances that belong to the autoscaling group, and paste it on your web browser according to the model below, editing the route according to the desired output: PublicIPV4:3000/
 
 Available routes:
 
@@ -122,8 +121,7 @@ Available routes:
 - `/players/team/:teamname` - returns all players of a team. For example, /players/team/TOR will return all players of Toronto Maple Leafs.
 - `/teams` - returns a list of the teams.
 
-- Part 2: copy the public IP of the Jenkins EC2 instance and paste it on your web browser according to the model below:
-<PublicIPV4>:8080
+- Part 2: copy the public IP of the Jenkins EC2 instance and paste it on your web browser according to the model PublicIPV4:8080
 
 - Part 3: use the following command to get the external ip of the load balancer:
 ```sh
