@@ -88,14 +88,8 @@ ansible-playbook -i hosts jenkins.ansible.yaml
 - Deploy the EKS Cluster with Terraform (part 3):
 ```sh
 terraform init
-```
-```sh
 terraform validate
-```
-```sh
 terraform plan
-```
-```sh
 terraform apply -auto-approve
 ```
 
@@ -105,14 +99,14 @@ aws eks update-kubeconfig --region <region> --name <EKS_cluster_name>
 ```
 - Then, deploy the application by running the manifests in the following order:
 ```sh
-kubectl -f apply mongo-service.yaml
-kubectl -f apply mongo-deployment.yaml
-kubectl -f apply app-service.yaml
-kubectl -f apply app-deployment.yaml
+kubectl apply -f mongo-service.yaml
+kubectl apply -f mongo-deployment.yaml
+kubectl apply -f app-service.yaml
+kubectl apply -f app-deployment.yaml
 ```
 
 ## Testing the Results
-- Part 1: copy the public IP of your EC2 instances that belong to the autoscaling group, and paste it on your web browser according to the model below, editing the route according to the desired output: PublicIPV4:3000/
+- Part 1: copy the DNS of the load balancer created in part 1, and paste it on your web browser, editing the route according to the desired output:
 
 Available routes:
 
