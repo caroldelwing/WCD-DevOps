@@ -1,0 +1,15 @@
+{
+  "name": "app.js",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Your app description",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^5.1.0"
+  }
+}
