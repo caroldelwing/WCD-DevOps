@@ -10,5 +10,5 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "eks-wcd-project7"
+  cluster_name = "eks-wcd-project8"
 }

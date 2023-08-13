@@ -16,7 +16,7 @@ spec:
         app: app
     spec:
       containers:
-      - image: caroldelwing/wcdapp:latest
+      - image: caroldelwing/p8app
         name: app
         ports:
           - containerPort: 3000

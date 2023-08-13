@@ -16,7 +16,7 @@ spec:
         app: mongodb
     spec:
       containers:
-      - image: caroldelwing/wcdmongodb:latest
+      - image: caroldelwing/p8mongodb
         name: mongodb
         ports:
           - containerPort: 27017
