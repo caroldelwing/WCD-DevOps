@@ -15,6 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Get directory
+        run: ls
+
       #Step 2: Test application, we'll use docker-compose to test the application.
       - name: Test application 
         run: |
