@@ -16,13 +16,16 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get directory
-        run: ls
+        run: |
+          ls
+          pwd
+          cd project_8/section_3
 
       #Step 2: Test application, we'll use docker-compose to test the application.
       - name: Test application 
         run: |
           
-          cd WCD-DevOps/project_8/section_3
+          cd project_8/section_3
           sudo docker-compose -f docker-compose.yml up
           sleep 60
           if sudo docker-compose logs app | grep -q "Connected to MongoDB successfully"; then
