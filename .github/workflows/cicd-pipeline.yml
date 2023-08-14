@@ -39,7 +39,7 @@ jobs:
       #Step 3: Build Docker image from the DockerFiles
       - name: Build Docker images for NodeJS app and MongoDB
         run: |
-          cd WCD-DevOps/project_8/section_3
+          cd project_8/section_3
 
           #Build NodeJS app image
           docker build -t caroldelwing/p8app -f Dockerfile.app .
