@@ -1,12 +1,12 @@
 name: EKS Deployment Pipeline
 
 on:
+  workflow_dispatch: {}
   push:
     branches: #Evaluate if we are going to remove this trigger or not
       - main
       - project_8
-  workflow_dispatch: #Setup manual trigger
-
+  
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -24,16 +24,14 @@ jobs:
         run: |
           
           cd WCD-DevOps/project_8/section_3
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-          sudo docker-compose up
-          sleep 30
+          sudo docker-compose -f docker-compose.yml up
+          sleep 60
           if sudo docker-compose logs app | grep -q "Connected to MongoDB successfully"; then
             echo "Test succeeded: 'Connected to MongoDB successfully' found in logs"
             sudo docker-compose down
           else
             echo "Test failed: 'Connected to MongoDB successfully' not found in logs"
-            sudo docker-compose down
+            sudo docker-compose -f docker-compose.yml down
             exit 1  #Exit with a non-zero status to indicate test failure
           fi
       
