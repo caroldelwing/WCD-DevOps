@@ -4,7 +4,6 @@ on:
   workflow_dispatch: {}
   push:
     branches: #Evaluate if we are going to remove this trigger or not
-      - main
       - project_8
   
 jobs:
@@ -15,9 +14,6 @@ jobs:
       #Step 1: Checkout code from the project folder to GitHub Server
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: project_8 #This is the name of the branch where the folder is. When merged to main, update this ref to main.
-          path: 'WCD-DevOps/project_8/section_3'
 
       #Step 2: Test application, we'll use docker-compose to test the application.
       - name: Test application 
