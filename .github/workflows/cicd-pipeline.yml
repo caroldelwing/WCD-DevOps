@@ -41,16 +41,16 @@ jobs:
         run: |
           cd WCD-DevOps/project_8/section_3
 
-        #Build NodeJS app image
+          #Build NodeJS app image
           docker build -t caroldelwing/p8app -f Dockerfile.app .
 
-        #Build MongoDB image
+          #Build MongoDB image
           docker build -t caroldelwing/p8mongodb -f Dockerfile.mongodb .
 
-        #Log in to Docker Hub
+          #Log in to Docker Hub
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-        #Push the images
+          #Push the images
           docker push caroldelwing/p8app
           docker push caroldelwing/p8mongodb
 
@@ -58,14 +58,14 @@ jobs:
       - name: Deploy to EKS
         run: |
           
-        #Set up AWS credentials
+          #Set up AWS credentials
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-        #Update kubeconfig for EKS cluster
+          #Update kubeconfig for EKS cluster
           aws eks --region us-east-1 update-kubeconfig --name eks-wcd-project8
 
-        #Apply Kubernetes manifests
+          #Apply Kubernetes manifests
           kubectl apply -f mongo-service.yaml
           kubectl apply -f mongo-deployment.yaml
           kubectl apply -f app-service.yaml
