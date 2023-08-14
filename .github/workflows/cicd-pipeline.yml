@@ -4,6 +4,7 @@ on:
   push:
     branches: #Evaluate if we are going to remove this trigger or not
       - main
+      - project_8
   workflow_dispatch: #Setup manual trigger
 
 jobs:
