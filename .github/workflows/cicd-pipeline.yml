@@ -1,0 +1,71 @@
+name: EKS Deployment Pipeline
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: #Evaluate if we are going to remove this trigger or not
+      - main
+      - project_8
+  
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      #Step 1: Checkout code from the project folder to GitHub Server
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: project_8 #This is the name of the branch where the folder is. When merged to main, update this ref to main.
+          path: 'WCD-DevOps/project_8/section_3'
+
+      #Step 2: Test application, we'll use docker-compose to test the application.
+      - name: Test application 
+        run: |
+          
+          cd WCD-DevOps/project_8/section_3
+          sudo docker-compose -f docker-compose.yml up
+          sleep 60
+          if sudo docker-compose logs app | grep -q "Connected to MongoDB successfully"; then
+            echo "Test succeeded: 'Connected to MongoDB successfully' found in logs"
+            sudo docker-compose down
+          else
+            echo "Test failed: 'Connected to MongoDB successfully' not found in logs"
+            sudo docker-compose -f docker-compose.yml down
+            exit 1  #Exit with a non-zero status to indicate test failure
+          fi
+      
+      #Step 3: Build Docker image from the DockerFiles
+      - name: Build Docker images for NodeJS app and MongoDB
+        run: |
+          cd WCD-DevOps/project_8/section_3
+
+          #Build NodeJS app image
+          docker build -t caroldelwing/p8app -f Dockerfile.app .
+
+          #Build MongoDB image
+          docker build -t caroldelwing/p8mongodb -f Dockerfile.mongodb .
+
+          #Log in to Docker Hub
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+          #Push the images
+          docker push caroldelwing/p8app
+          docker push caroldelwing/p8mongodb
+
+      #Step 4: Deploy application to EKS
+      - name: Deploy to EKS
+        run: |
+          
+          #Set up AWS credentials
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+          #Update kubeconfig for EKS cluster
+          aws eks --region us-east-1 update-kubeconfig --name eks-wcd-project8
+
+          #Apply Kubernetes manifests
+          kubectl apply -f mongo-service.yaml
+          kubectl apply -f mongo-deployment.yaml
+          kubectl apply -f app-service.yaml
+          kubectl apply -f app-deployment.yaml
