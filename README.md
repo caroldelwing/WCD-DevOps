@@ -28,3 +28,10 @@ of the containers was done using the Kubernetes stack.
     - EC2 servers to host a web app architecture with API and Database (using Ansible);
     - EC2 instance hosting a Jenkins server (using Ansible);
     - Functional AWS EKS cluster hosting a web app with API and Database (using Terraform).
+
+### [Project 8](https://github.com/caroldelwing/WCD-DevOps/tree/main/project_8) - CI/CD
+  • Deploy a CICD pipeline using GitHub Actions. The pipeline comprises checkout, test, build, and deploy stages of a web application, which is deployed in a multi-container setup in a cloud production Kubernetes cluster (EKS).
+  • This project comprises three sections:
+    - Terraform code to deploy an EC2 instance and host a Jenkins server (WCD course requirement);
+    - Terraform code to deploy a functional AWS EKS cluster;
+    - Application and database code, Dockerfiles, Docker-compose file, and YAML manifests that will be used by the pipeline. Note: the pipeline code is located in the .github folder.
