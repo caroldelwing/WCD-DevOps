@@ -69,7 +69,6 @@ kubectl port-forward service/monitoring-grafana 8080:80 -n monitoring
 
 - Now, install Loki:
 ```sh
-kubectl create namespace logging
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm upgrade --install loki --namespace=monitoring grafana/loki-stack --set grafana.enabled=false --set loki.enabled=true --set loki.promtail.enabled=true
